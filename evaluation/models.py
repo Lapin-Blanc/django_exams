@@ -38,8 +38,8 @@ NIVEAU_CHOICES = (
 # 
 class Question(models.Model):
 
-    numero = models.IntegerField(help_text=u"Un numéro pour identifier facilement la question", unique=True, default=_get_next_question_num)
-    description = models.CharField(max_length=100, default=u"Description courte de la question", help_text=u"Pour identifier facilement la question")
+    numero = models.IntegerField(help_text=u"Le numéro de référence de la question", unique=True, default=_get_next_question_num)
+    description = models.CharField(max_length=100, default=u"Description courte de la question", help_text=u"Description identifiant la question")
     intitule = models.TextField(default=u"Entrez le texte de la question ici...", help_text=u"Les balises HTML sont accept&eacute;es")
     niveau = models.IntegerField(choices=NIVEAU_CHOICES, default=3)
     categorie = models.ForeignKey(QuestionCategory)
