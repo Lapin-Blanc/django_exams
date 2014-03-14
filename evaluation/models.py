@@ -38,11 +38,11 @@ NIVEAU_CHOICES = (
 # 
 class Question(models.Model):
 
-    numero = models.IntegerField(help_text=u"Le numéro de référence de la question", unique=True, default=_get_next_question_num)
+    numero = models.IntegerField("numéro", help_text=u"Le numéro de référence de la question", unique=True, default=_get_next_question_num)
     description = models.CharField(max_length=100, default=u"Description courte de la question", help_text=u"Description identifiant la question")
-    intitule = models.TextField(default=u"Entrez le texte de la question ici...", help_text=u"Les balises HTML sont accept&eacute;es")
+    intitule = models.TextField("intitulé", default=u"Entrez le texte de la question ici...", help_text=u"Les balises HTML sont accept&eacute;es")
     niveau = models.IntegerField(choices=NIVEAU_CHOICES, default=3)
-    categorie = models.ForeignKey(QuestionCategory)
+    categorie = models.ForeignKey(QuestionCategory, verbose_name="catégorie")
     
     def __unicode__(self):
         question_type = getattr(self._get_subclass_question(),"question_type","")
@@ -84,15 +84,18 @@ class QuestionCapture(Question):
 
 # Les zone de l'image qui sont considérées comme de bonnes réponses
 class ZoneImage(models.Model):
-    x = models.IntegerField()
-    y = models.IntegerField()
-    width = models.IntegerField()
-    height = models.IntegerField()
+    x = models.IntegerField("Abscisse")
+    y = models.IntegerField("Ordonnée")
+    width = models.IntegerField("Largeur")
+    height = models.IntegerField("Hauteur")
     question = models.ForeignKey(QuestionCapture)
     
     def __unicode__(self):
         return u"{0}, {1}, {2}, {3}".format(self.x, self.y, self.width, self.height)
 
+    class Meta:
+        verbose_name = u"Zone de réponse"
+        verbose_name_plural = u"Zones de réponse"
 
 
 

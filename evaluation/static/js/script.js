@@ -3,8 +3,8 @@ $(function() {
     var $selection = $('<div>').addClass('selection-box');
     var $image = $('#capture_image');
     var $pos = $container.position();
-    var $posi = $image.position();
 
+    $image.on('dragstart', function(event) { event.preventDefault(); });
 
     $container.on('mousedown', function(e) {
         var click_y = Math.round(e.pageY - $pos.top), click_x = Math.round(e.pageX - $pos.left);
@@ -43,7 +43,6 @@ $(function() {
                 }
         }).on('mouseup', function(e) {
             $container.off('mousemove');
-            // $selection.remove();
         });
     });
         $image.load(function() {
