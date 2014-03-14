@@ -9,7 +9,7 @@ class Question(models.Model):
     
     def __unicode__(self):
         question_type = getattr(self._get_subclass_question(),"question_type","")
-        return u"{0:>04}[{1:>15}]: {2}".format(self.numero, question_type, self.description)
+        return u"{0:>04}[{1:<15}]: {2}".format(self.numero, question_type, self.description)
     
     def _get_subclass_question(self):
         from django.db.models.fields.related import SingleRelatedObjectDescriptor
