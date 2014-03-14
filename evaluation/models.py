@@ -34,6 +34,8 @@ NIVEAU_CHOICES = (
 )
 
 # Classe Question principale
+# Les autres classes de question héritent de celle-ci, et doivent implémenter les méthodes check_answer
+# 
 class Question(models.Model):
 
     numero = models.IntegerField(help_text=u"Un numéro pour identifier facilement la question", unique=True, default=_get_next_question_num)
@@ -44,7 +46,7 @@ class Question(models.Model):
     
     def __unicode__(self):
         question_type = getattr(self._get_subclass_question(),"question_type","")
-        return u"{0:>04}[{1:<15}]: {2}".format(self.numero, question_type, self.description)
+        return u"{0:>04} [{1:<15}]: {2}".format(self.numero, question_type, self.description)
 
     class Meta:
         ordering = ["numero",]
