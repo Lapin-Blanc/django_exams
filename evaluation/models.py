@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.db import models
+from django.core.urlresolvers import reverse
 
+#####################################
 # Partie consacrées aux questions
 #####################################
 
@@ -34,8 +36,8 @@ NIVEAU_CHOICES = (
 )
 
 # Classe Question principale
-# Les autres classes de question héritent de celle-ci, et doivent implémenter les méthodes check_answer
-# 
+# Une Question n'est jamais instanciée à partir d'ici, mais bien à partir de l'une des classes Django dérivées
+# ci-après (héritage Django).
 class Question(models.Model):
 
     numero = models.IntegerField("numéro", help_text=u"Le numéro de référence de la question", unique=True, default=_get_next_question_num)
@@ -51,6 +53,7 @@ class Question(models.Model):
     class Meta:
         ordering = ["numero",]
 
+    # Méthode qui retourne la sous-classe Django qui a hérité de celle-ci et a servi à son instanciation
     def _get_subclass_question(self):
         from django.db.models.fields.related import SingleRelatedObjectDescriptor
         subclass_question_types = [a for a in dir(Question) if isinstance(getattr(Question, a), SingleRelatedObjectDescriptor)]
@@ -58,16 +61,21 @@ class Question(models.Model):
             if hasattr(self, subclass_question_type):
                 return getattr(self, subclass_question_type)
     
+    # Vue du détail d'une Question à partir du site d'administration
+    def get_absolute_url(self):
+        return reverse("question-detail", args=[self.id])
+
     def check_answer(self, *args, **kwargs):
         return self._get_subclass_question().check_answer(*args, **kwargs)
+    
 
 # Question avec une capture d'écran où il faut indiquer sa réponse en déposant un curseur sur une image
 # si le curseur est dans l'une des bonnes zones, alors la réponse est correcte
 class QuestionCapture(Question):
-    question_type = u"Capture d'écran"
-    template = "questions/question_capture.html"
+    question_type = u"Capture"
+    template_name = "evaluation/question_capture.html"
 
-    # Capture specific attributes
+    # QuestionCapture specific attributes
     image = models.ImageField(upload_to="captures")
     
     def check_answer(self, x, y):
@@ -102,14 +110,32 @@ class ZoneImage(models.Model):
 
 
 class QuestionChoixMultipleTexte(Question):
-    question_type = u"QCM sur texte"
+    question_type = u"QCM texte"
+    template_name = "evaluation/question_qcm_texte.html"
 
     class Meta:
         verbose_name = u"Question à choix multiple (texte)"
         verbose_name_plural = u"Questions à choix multiple (texte)"
 
 class QuestionChoixMultipleImage(Question):
-    question_type = u"QCM sur image"
+    question_type = u"QCM image"
+    template_name = "evaluation/question_qcm_image.html"
+
+    class Meta:
+        verbose_name = u"Question à choix multiple (image)"
+        verbose_name_plural = u"Questions à choix multiple (image)"
+
+class QuestionChoixUniqueTexte(Question):
+    question_type = u"QCU texte"
+    template_name = "evaluation/question_qcu_texte.html"
+
+    class Meta:
+        verbose_name = u"Question à choix multiple (texte)"
+        verbose_name_plural = u"Questions à choix multiple (texte)"
+
+class QuestionChoixUniqueImage(Question):
+    question_type = u"QCU image"
+    template_name = "evaluation/question_qcu_image.html"
 
     class Meta:
         verbose_name = u"Question à choix multiple (image)"
