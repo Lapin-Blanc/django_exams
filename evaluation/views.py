@@ -21,10 +21,7 @@ def answer_single_question(request, pk):
     # la réponse ne doit pas contenir autre chose que le(s) champ(s) de réponse pour
     # être corrigée -> on retire le token de sécurité
     answer.pop('csrfmiddlewaretoken')
-    result = question.check_answer(**answer)
-    if result:
-        message= u"Réponse correcte"
-    else:
-        message = u"Réponse inexacte"
+    result = question.check_answer(answer=answer)
+    message= u"Réponse correcte à {:.2f} %".format(result*100)
     messages.add_message(request, messages.INFO, message)
     return HttpResponseRedirect(reverse('question-detail', args=[question.id,]))

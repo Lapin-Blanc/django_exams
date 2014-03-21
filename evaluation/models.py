@@ -78,13 +78,13 @@ class QuestionCapture(Question):
     # QuestionCapture specific attributes
     image = models.ImageField(upload_to="captures")
     
-    def check_answer(self, x, y):
-        x = float(x[0])
-        y = float(y[0])
+    def check_answer(self, answer):
+        x = float(answer['x'][0])
+        y = float(answer['y'][0])
         for z in self.zoneimage_set.all():
             if x>=z.x and x<=z.x+z.width and y>=z.y and y<=z.y+z.height:
-                return True
-        return False
+                return 1.
+        return 0.
 
     class Meta:
         verbose_name = u"Question capture d'écran"
@@ -105,38 +105,60 @@ class ZoneImage(models.Model):
         verbose_name = u"Zone de réponse"
         verbose_name_plural = u"Zones de réponse"
 
+# Questions à choix. Le chois peut-être multiple ou unique, et la question peut comporter ou non une image comme 
+# support à la question.
+QCM_ANSWER_TYPE_CHOICES = (
+    ("M", "Choix multiples"),
+    ("U", "Choix unique"),
+)
+class QuestionChoixMultiple(Question):
+    question_type = u"QCM"
+    template_name = "evaluation/question_qcm.html"
 
-
-
-
-class QuestionChoixMultipleTexte(Question):
-    question_type = u"QCM texte"
-    template_name = "evaluation/question_qcm_texte.html"
-
-    class Meta:
-        verbose_name = u"Question à choix multiple (texte)"
-        verbose_name_plural = u"Questions à choix multiple (texte)"
-
-class QuestionChoixMultipleImage(Question):
-    question_type = u"QCM image"
-    template_name = "evaluation/question_qcm_image.html"
+    # QuestionChoixMultiple specific attributes
+    type_reponse = models.CharField("Type de réponse", max_length=1, choices=QCM_ANSWER_TYPE_CHOICES, default="U")
+    image = models.ImageField(upload_to="captures", blank=True, null=True)
 
     class Meta:
-        verbose_name = u"Question à choix multiple (image)"
-        verbose_name_plural = u"Questions à choix multiple (image)"
+        verbose_name = u"Question à choix multiple"
+        verbose_name_plural = u"Questions à choix multiple"
 
-class QuestionChoixUniqueTexte(Question):
-    question_type = u"QCU texte"
-    template_name = "evaluation/question_qcu_texte.html"
+    def check_answer(self, answer):
+        choix = answer.get('choix', [])
+        # Si il s'agit d'une réponse admettant plusieurs réponses
+        if self.type_reponse == "M":
+            points = 0
+            total = self.choix_set.count()
+            # Pour chacun des choix prévu comme réponse
+            for choix_reponse in self.choix_set.all():
+                # Si le choix est une bonne réponse
+                if choix_reponse.correct:
+                    # et qu'il a été coché comme réponse
+                    if u"{}".format(choix_reponse.id) in choix:
+                        # alors on ajoute un point
+                        points = points +1
+                # sinon, si le choix n'est pas une réponse correcte
+                else:
+                    # et qu'il n'a pas été coché comme réponse
+                    if u"{}".format(choix_reponse.id) not in choix:
+                        # alors on ajoute un point
+                        points = points +1
+            # on retourne la proportion de bonnes réponses...
+            return float(points)/total    
+        # Sinon, il s'agit d'une question n'admettant qu'une seule réponse                
+        else:
+            # Si pas de réponse donnée, on retourne 0
+            if not choix:
+                return 0.
+            if choix[0] in [u"{}".format(c.id) for c in self.choix_set.all() if c.correct]:
+                return 1.
+            else:
+                return 0.
 
-    class Meta:
-        verbose_name = u"Question à choix multiple (texte)"
-        verbose_name_plural = u"Questions à choix multiple (texte)"
-
-class QuestionChoixUniqueImage(Question):
-    question_type = u"QCU image"
-    template_name = "evaluation/question_qcu_image.html"
-
-    class Meta:
-        verbose_name = u"Question à choix multiple (image)"
-        verbose_name_plural = u"Questions à choix multiple (image)"
+class Choix(models.Model):
+    libelle = models.CharField(max_length=200)
+    correct = models.BooleanField(default=False)
+    question = models.ForeignKey(QuestionChoixMultiple)
+    
+    def __unicode__(self):
+        return self.libelle
