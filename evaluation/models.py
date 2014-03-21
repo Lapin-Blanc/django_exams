@@ -79,8 +79,8 @@ class QuestionCapture(Question):
     image = models.ImageField(upload_to="captures")
     
     def check_answer(self, x, y):
-        x = int(x[0])
-        y = int(y[0])
+        x = float(x[0])
+        y = float(y[0])
         for z in self.zoneimage_set.all():
             if x>=z.x and x<=z.x+z.width and y>=z.y and y<=z.y+z.height:
                 return True
