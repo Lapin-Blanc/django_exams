@@ -43,6 +43,7 @@
             <div id="conteneur" style="position:relative;">
                 <img src="{{ question.image.url }}" id="image"/>
             </div>
+            <p><em>Cliquez sur l'image pour déposer un pointeur représentant votre réponse, puis validez votre réponse</em></p>
             <input type="hidden" id="x_id" name="x" value="0"/><input type="hidden" id="y_id" name="y" value="0"/>
             {% csrf_token %}
         </fieldset>

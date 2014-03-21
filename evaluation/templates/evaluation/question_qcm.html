@@ -21,7 +21,7 @@
             {% csrf_token %}
         {% if question.type_reponse == "U" %}
 
-            <p>Choix unique</p>
+            <p><em>Un seul choix possible</em></p>
             {% for choix in question.choix_set.all %}
                 <input type="radio" name="choix" id="choix{{ forloop.counter }}" value="{{ choix.id }}" />
                 <label for="choix{{ forloop.counter }}">{{ choix.libelle }}</label><br />
@@ -29,7 +29,7 @@
 
         {% else %}
 
-            <p>Choix multiple</p>
+            <p><em>Plusieurs choix possibles</em></p>
             {% for choix in question.choix_set.all %}
                 <input type="checkbox" name="choix" id="choix{{ forloop.counter }}" value="{{ choix.id }}" />
                 <label for="choix{{ forloop.counter }}">{{ choix.libelle }}</label><br />
