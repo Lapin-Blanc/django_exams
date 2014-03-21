@@ -1,5 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect
@@ -7,13 +8,13 @@ from django.core.urlresolvers import reverse
 
 from evaluation.models import Question
 
-@login_required
+@staff_member_required
 def question_detail(request, pk):
     # retourne la question qui a été effectivement créée (sous-classe de Question)
     question = get_object_or_404(Question, pk=pk)._get_subclass_question()
     return render(request, question.template_name, {'question' : question, 'single_question' : True})
 
-@login_required
+@staff_member_required
 def answer_single_question(request, pk):
     question = get_object_or_404(Question, pk=pk)._get_subclass_question()
     answer = dict(request.POST)
