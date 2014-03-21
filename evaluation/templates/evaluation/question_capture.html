@@ -1,4 +1,49 @@
-<fieldset style="padding:10px"><legend>Question {{ question.numero }}</legend>
-    <p>{{ question.intitule|safe }}</p>
-    <img src="{{ question.image.url }}" id="image"/>
-</fieldset>
+﻿    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript">
+    $(function() {
+    var $container = $('#conteneur');
+    var $pos = $container.position();
+    var $answer = $('<img>').attr("src","/static/img/pointeur.png").css({"position":"absolute","top":"-100px","left":"-100px"}).appendTo($container);
+    var $image = $('#image');
+    
+    $container.on('mousedown', '#image', function(e) {
+        var click_y = e.pageY - $pos.top, click_x = e.pageX - $pos.left;
+        $("#x_id").val(click_x);
+        $("#y_id").val(click_y);
+        $answer.css({"top":click_y,"left":click_x});
+    });
+
+    $image.load(function() {
+        $image.parent().width($image.width())
+        $image.parent().height($image.height())
+    });
+    
+    $("#btn_annuler").click(function (e) {
+        $("#x_id").val("");
+        $("#y_id").val("");
+        $answer.css({"position":"absolute","top":"-100px","left":"-100px"});
+    });
+    });
+    </script>
+    {% if single_question %}
+        {% if messages %}
+        <!-- Résultat de la question -->
+            <script type="text/javascript">
+                {% for message in messages %}
+                    alert("{{ message }}");
+                {% endfor %}
+            </script>
+        {% endif %}
+    {% endif %}
+    <form action="{% if single_question %}{% url 'answer-single-question' question.id %}{% else %}<!-- question answer during an exam -->{% endif %}" method="post" id="question_form_id">
+        <fieldset style="padding:10px"><legend>Question {% if single_question %}{{ question.numero }}{% else %}<!-- sequential num in exam-->{% endif %}</legend>
+            <input type="button" value="Annuler" id="btn_annuler" />
+            <input type="submit" value="Valider" />
+            <p>{{ question.intitule|safe }}</p>
+            <div id="conteneur" style="position:relative;">
+                <img src="{{ question.image.url }}" id="image"/>
+            </div>
+            <input type="hidden" id="x_id" name="x" value="0"/><input type="hidden" id="y_id" name="y" value="0"/>
+            {% csrf_token %}
+        </fieldset>
+    </form>
