@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
-from evaluation.models import QuestionCategory, QuestionCapture, ZoneImage, QuestionChoixMultiple, Choix
+from evaluation.models import QuestionCategory, QuestionCapture, ZoneImage, QuestionChoixMultiple, Choix, Questionnaire, QuestionnaireLine
 
 admin.site.register(QuestionCategory)
 
-# Question capture d'écran
+# Administration des questions
 class ZoneImageInline(admin.TabularInline):
     model = ZoneImage
     extra = 1
@@ -26,3 +26,20 @@ class QuestionChoixMultipleAdmin(admin.ModelAdmin):
     list_filter = ['niveau', 'categorie__nom',]
     inlines = [ChoixInline,]
 admin.site.register(QuestionChoixMultiple, QuestionChoixMultipleAdmin)
+
+# Administration des questionnaires d'examen
+class QuestionnaireLineInline(admin.TabularInline):
+    model = QuestionnaireLine
+    extra = 1
+
+class QuestionnaireAdmin(admin.ModelAdmin):
+    inlines = [QuestionnaireLineInline,]
+    class Media:
+        js = (
+        '//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js',
+        '//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js',
+        '/static/js/inline_sortable.js',
+        )
+        css = {"all" : ('//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css',)
+        }
+admin.site.register(Questionnaire, QuestionnaireAdmin)

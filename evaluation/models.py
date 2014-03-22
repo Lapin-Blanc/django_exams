@@ -162,3 +162,45 @@ class Choix(models.Model):
     
     def __unicode__(self):
         return self.libelle
+
+#####################################
+# Partie consacrées aux examens
+#####################################
+
+# Attribue automatiquement la prochaine position
+def _get_next_position():
+    lines = QuestionnaireLine.objects.all()
+    if lines:
+        return max([l.position for l in lines])+1
+    else:
+        return 1
+
+class Questionnaire(models.Model):
+    libelle = models.CharField(max_length=20,help_text="Nom descriptif du questionnaire")
+    duree = models.IntegerField("Durée",help_text="Exprimée en minutes", default=30)
+    niveau = models.IntegerField(choices=NIVEAU_CHOICES, default=3)
+    categorie = models.ForeignKey(QuestionCategory, verbose_name="catégorie")
+    
+    def __unicode__(self):
+        return self.libelle
+
+class QuestionnaireLine(models.Model):
+    questionnaire = models.ForeignKey(Questionnaire)
+    position = models.IntegerField(null=True, blank=True)
+    question = models.ForeignKey(Question)
+    ponderation = models.IntegerField("Pondération", default=1)
+    
+    def save(self, *args, **kwargs):
+        if not self.position:
+            lines_pos = [l.position for l in self.questionnaire.questionnaireline_set.all()]
+            if lines_pos:
+                self.position = max(lines_pos)+1
+            else:
+                self.position = 1
+        return super(QuestionnaireLine, self).save(*args, **kwargs)
+        
+    def __unicode__(self):
+        return u"{0:>2} - {1}".format(self.position, self.question)
+    
+    class Meta:
+        ordering = ['position',]
