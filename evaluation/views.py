@@ -5,8 +5,9 @@ from django.contrib import messages
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
-
-from evaluation.models import Question
+from django.utils import timezone
+from django.template import RequestContext, loader
+from evaluation.models import Question, Examen
 
 @staff_member_required
 def question_detail(request, pk):
@@ -25,3 +26,44 @@ def answer_single_question(request, pk):
     message= u"Réponse correcte à {:.2f} %".format(result*100)
     messages.add_message(request, messages.INFO, message)
     return HttpResponseRedirect(reverse('question-detail', args=[question.id,]))
+
+@login_required
+def exams_for_user(request):
+    utilisateur = request.user
+    return render(request, "examens/liste_examens.html", {"exams_list":request.user.examen_set.all()})
+
+@login_required
+def exam_for_user(request, exam_id):
+    exam = get_object_or_404(Examen, id=exam_id, utilisateur=request.user)
+    if not exam.debut:
+        exam.debut = timezone.now()
+    exam.save()
+    unanswered_questions = exam.examenline_set.filter(repondu=None)
+    if unanswered_questions:
+        next_question = unanswered_questions[0]
+        q_questionnaire = next_question.question_line
+        q_position = q_questionnaire.position
+        q = next_question.question_line.question._get_subclass_question()
+        template = loader.get_template(q.template_name)
+        context = RequestContext(request, {
+            'question': q_position,
+        })
+        return render(request, "examens/examen.html", { "exam":exam, 
+                                                        "elapsed":(timezone.now()-exam.debut).seconds,
+                                                        "total":exam.questionnaire.duree * 60,
+                                                        #"question_html":q_questionnaire.question.render_to_html(q_position=q_position, answer_url="/test/%s/%s/answer/" % (exam_id, next_question.id)),
+                                                        "question_html": template.render(context),
+                                                        })
+    else:
+        #Examen terminé ou bien sans questions à gérer
+        from django.db.models import Sum
+        if not exam.fin:
+            exam.fin = timezone.now()
+        exam.resultat = exam.examenline_set.aggregate(Sum('resultat'))['resultat__sum']
+        total = exam.questionnaire.questionline_set.aggregate(Sum('ponderation'))['ponderation__sum']
+        exam.save()
+        return HttpResponse("""
+        <h1>Test terminé</h1>
+        <h2>R&eacute;sultat:&nbsp;%0d/%s</h2>
+        <a href="/test/">Retour aux tests...</a>
+        """ % (round(exam.resultat,0),total))

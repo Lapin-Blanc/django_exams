@@ -65,7 +65,13 @@ class ExamenLineInline(admin.TabularInline):
         return False
 
 class ExamenAdmin(admin.ModelAdmin):
-    readonly_fields = ['debut', 'fin', 'resultat']
+    
+    def get_readonly_fields(self, request, obj=None):
+        if obj: # obj is not None, so this is an edit
+            return ['utilisateur', 'questionnaire', 'debut', 'fin', 'resultat']
+        else: # This is an addition
+            return ['debut', 'fin', 'resultat']
+
     inlines = [ExamenLineInline,]
 
 admin.site.register(Questionnaire, QuestionnaireAdmin)

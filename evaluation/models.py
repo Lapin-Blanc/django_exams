@@ -221,6 +221,12 @@ class Examen(models.Model):
             self.examenline_set.all().delete()
             for q in self.questionnaire.questionnaireline_set.all():
                 self.examenline_set.create(question_line=q)
+    
+    def get_readonly_fields(self, request, obj=None):
+        if obj: # obj is not None, so this is an edit
+            return ['utilisateur', 'questionnaire', 'debut', 'fin', 'resultat'] # Return a list or tuple of readonly fields' names
+        else: # This is an addition
+            return []
 
 class ExamenLine(models.Model):
     examen = models.ForeignKey(Examen)
