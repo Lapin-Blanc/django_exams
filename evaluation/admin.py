@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
-from evaluation.models import QuestionCategory, QuestionCapture, ZoneImage, QuestionChoixMultiple, Choix, Questionnaire, QuestionnaireLine, Examen
+from evaluation.models import QuestionCategory, QuestionCapture, ZoneImage, QuestionChoixMultiple, Choix, Questionnaire, QuestionnaireLine, Examen, ExamenLine
 
 admin.site.register(QuestionCategory)
 
@@ -44,8 +44,29 @@ class QuestionnaireAdmin(admin.ModelAdmin):
         }
 
 # Administration des examens
+class ExamenLineInline(admin.TabularInline):
+    model = ExamenLine
+
+    can_delete = False
+    extra = 0
+    editable_fields = []
+    
+    extra = 0
+
+    def get_readonly_fields(self, request, obj=None):
+        fields = []
+        for field in self.model._meta.get_all_field_names():
+            if (not field == 'id'):
+                if (field not in self.editable_fields):
+                    fields.append(field)
+        return fields
+    
+    def has_add_permission(self, request):
+        return False
+
 class ExamenAdmin(admin.ModelAdmin):
-    pass
+    readonly_fields = ['debut', 'fin', 'resultat']
+    inlines = [ExamenLineInline,]
 
 admin.site.register(Questionnaire, QuestionnaireAdmin)
 admin.site.register(Examen, ExamenAdmin)
