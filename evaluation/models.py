@@ -1,7 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 from django.db import models
 from django.core.urlresolvers import reverse
-
+from django.contrib.auth.models import User
 #####################################
 # Partie consacrées aux questions
 #####################################
@@ -197,10 +197,47 @@ class QuestionnaireLine(models.Model):
                 self.position = max(lines_pos)+1
             else:
                 self.position = 1
-        return super(QuestionnaireLine, self).save(*args, **kwargs)
+        super(QuestionnaireLine, self).save(*args, **kwargs)
         
     def __unicode__(self):
         return u"{0:>2} - {1}".format(self.position, self.question)
     
     class Meta:
         ordering = ['position',]
+
+class Examen(models.Model):
+    utilisateur = models.ForeignKey(User)
+    questionnaire = models.ForeignKey(Questionnaire)
+    debut = models.DateTimeField("Début du test", null=True, blank=True)
+    fin = models.DateTimeField("Fin du test", null=True, blank=True)
+    resultat = models.DecimalField("Résultat", max_digits=4, decimal_places=1, null=True, blank=True)
+    
+    def __unicode__(self):
+        return u"%s - %s" % (self.utilisateur, self.questionnaire)
+    
+    def save(self, *args, **kwargs):
+        super(Examen, self).save(*args, **kwargs)
+        if (not self.examenline_set.count()==self.questionnaire.questionnaireline_set.count()) and not self.resultat :
+            self.examenline_set.all().delete()
+            for q in self.questionnaire.questionnaireline_set.all():
+                self.examenline_set.create(question_line=q)
+
+class ExamenLine(models.Model):
+    examen = models.ForeignKey(Examen)
+    question_line = models.ForeignKey(QuestionnaireLine)
+    repondu = models.NullBooleanField("Correct", null=True, blank=True)
+    resultat = models.DecimalField("Résultat", max_digits=4, decimal_places=1, null=True, blank=True)
+    
+    def __unicode__(self):
+        return self.question_line.__unicode__()
+    
+    def save(self, *args, **kwargs):
+        if not self.repondu==None:
+            if self.repondu:
+                self.resultat = self.question_line.ponderation
+            else:
+                self.resultat = 0
+        super(ExamenLine, self).save(*args, **kwargs)
+    
+    class Meta:
+        ordering = ['question_line__position',]

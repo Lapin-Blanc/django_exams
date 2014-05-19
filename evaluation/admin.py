@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
-from evaluation.models import QuestionCategory, QuestionCapture, ZoneImage, QuestionChoixMultiple, Choix, Questionnaire, QuestionnaireLine
+from evaluation.models import QuestionCategory, QuestionCapture, ZoneImage, QuestionChoixMultiple, Choix, Questionnaire, QuestionnaireLine, Examen
 
 admin.site.register(QuestionCategory)
 
@@ -42,4 +42,10 @@ class QuestionnaireAdmin(admin.ModelAdmin):
         )
         css = {"all" : ('//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css',)
         }
+
+# Administration des examens
+class ExamenAdmin(admin.ModelAdmin):
+    pass
+
 admin.site.register(Questionnaire, QuestionnaireAdmin)
+admin.site.register(Examen, ExamenAdmin)
