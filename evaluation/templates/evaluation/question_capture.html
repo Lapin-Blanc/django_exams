@@ -1,4 +1,4 @@
-﻿    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+﻿    <script>window.jQuery || document.write('<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js">\x3C/script>')</script>
     <script type="text/javascript">
     $(function() {
     var $container = $('#conteneur');
@@ -35,7 +35,7 @@
             </script>
         {% endif %}
     {% endif %}
-    <form action="{% if single_question %}{% url 'answer-single-question' question.id %}{% else %}<!-- question answer during an exam -->{% endif %}" method="post" id="question_form_id">
+    <form action="{% if single_question %}{% url 'answer-single-question' question.id %}{% else %}{% url 'answer-exam-question' questionnaire.id question.id %}{% endif %}" method="post" id="question_form_id">
         <fieldset style="padding:10px"><legend>Question {% if single_question %}{{ question.numero }}{% else %}<!-- sequential num in exam-->{% endif %}</legend>
             <input type="button" value="Annuler" id="btn_annuler" />
             <input type="submit" value="Valider" />

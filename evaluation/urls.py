@@ -10,6 +10,5 @@ urlpatterns = patterns('',
 
     url(r'^$', views.exams_for_user, name='exams-list'),
     url(r'^(?P<exam_id>\d+)/$', views.exam_for_user, name='user-exam'),
-#    url(r'^(?P<exam_id>\d+)/(?P<question_id>\d+)/answer/$', views.answer_exam_question, name='question-answer'),
-
+    url(r'^(?P<exam_id>\d+)/(?P<question_id>\d+)/answer/$', views.answer_exam_question, name='answer-exam-question'),
 )

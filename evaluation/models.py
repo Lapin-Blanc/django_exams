@@ -232,7 +232,7 @@ class ExamenLine(models.Model):
     examen = models.ForeignKey(Examen)
     question_line = models.ForeignKey(QuestionnaireLine)
     repondu = models.NullBooleanField("Correct", null=True, blank=True)
-    resultat = models.DecimalField("Résultat", max_digits=4, decimal_places=1, null=True, blank=True)
+    resultat = models.DecimalField("Résultat", max_digits=4, decimal_places=1, null=True, blank=True, default=0)
     
     def __unicode__(self):
         return self.question_line.__unicode__()
