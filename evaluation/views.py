@@ -7,7 +7,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.utils import timezone
 from django.template import RequestContext, loader
-from evaluation.models import Question, Examen
+from evaluation.models import Question, Examen, ExamenLine
 
 @staff_member_required
 def question_detail(request, pk):
@@ -47,10 +47,12 @@ def exam_for_user(request, exam_id):
         q = next_question.question_line.question._get_subclass_question()
         template = loader.get_template(q.template_name)
         context = RequestContext(request, {
-            'question': q,
+            'question_line': next_question,
+            'question':q,
             'questionnaire' : exam,
         })
         return render(request, "examens/examen.html", { "exam":exam, 
+                                                        "question":q,
                                                         "elapsed":elapsed,
                                                         "total":exam.questionnaire.duree * 60,
                                                         #"question_html":q_questionnaire.question.render_to_html(q_position=q_position, answer_url="/test/%s/%s/answer/" % (exam_id, next_question.id)),
@@ -73,6 +75,13 @@ def exam_for_user(request, exam_id):
 
 @login_required
 def answer_exam_question(request, exam_id, question_id):
-    return HttpResponseRedirect(reverse('question-detail', args=[question.id,]))
+    exam_question = get_object_or_404(ExamenLine, id=question_id, examen=exam_id, examen__utilisateur=request.user)
+    answer = dict(request.POST)
+    answer.pop('csrfmiddlewaretoken')
+    exam_question.repondu = True
+    exam_question.resultat = exam_question.question_line.ponderation * exam_question.question_line.question.check_answer(**answer)
+    exam_question.save()
+
+    return HttpResponseRedirect(reverse('user-exam', args=[exam_id,]))
 
 

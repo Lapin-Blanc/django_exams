@@ -66,7 +66,8 @@ class Question(models.Model):
         return reverse("question-detail", args=[self.id])
 
     def check_answer(self, *args, **kwargs):
-        return self._get_subclass_question().check_answer(*args, **kwargs)
+        q = self._get_subclass_question()
+        return q.check_answer(*args, **kwargs)
     
 
 # Question avec une capture d'écran où il faut indiquer sa réponse en déposant un curseur sur une image
@@ -78,7 +79,7 @@ class QuestionCapture(Question):
     # QuestionCapture specific attributes
     image = models.ImageField(upload_to="captures")
     
-    def check_answer(self, answer):
+    def check_answer(self, **answer):
         x = float(answer['x'][0])
         y = float(answer['y'][0])
         for z in self.zoneimage_set.all():
@@ -123,7 +124,7 @@ class QuestionChoixMultiple(Question):
         verbose_name = u"Question à choix multiple"
         verbose_name_plural = u"Questions à choix multiple"
 
-    def check_answer(self, answer):
+    def check_answer(self, **answer):
         choix = answer.get('choix', [])
         # Si il s'agit d'une réponse admettant plusieurs réponses
         if self.type_reponse == "M":
@@ -231,19 +232,19 @@ class Examen(models.Model):
 class ExamenLine(models.Model):
     examen = models.ForeignKey(Examen)
     question_line = models.ForeignKey(QuestionnaireLine)
-    repondu = models.NullBooleanField("Correct", null=True, blank=True)
+    repondu = models.NullBooleanField("Répondu", null=True, blank=True, default=False)
     resultat = models.DecimalField("Résultat", max_digits=4, decimal_places=1, null=True, blank=True, default=0)
     
     def __unicode__(self):
         return self.question_line.__unicode__()
     
-    def save(self, *args, **kwargs):
-        if not self.repondu==None:
-            if self.repondu:
-                self.resultat = self.question_line.ponderation
-            else:
-                self.resultat = 0
-        super(ExamenLine, self).save(*args, **kwargs)
+    #def save(self, *args, **kwargs):
+    #    if not self.repondu==None:
+    #        if self.repondu:
+    #            self.resultat = self.question_line.ponderation
+    #        else:
+    #            self.resultat = 0
+    #    super(ExamenLine, self).save(*args, **kwargs)
     
     class Meta:
         ordering = ['question_line__position',]
