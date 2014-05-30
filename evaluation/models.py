@@ -221,7 +221,7 @@ class Examen(models.Model):
         if (not self.examenline_set.count()==self.questionnaire.questionnaireline_set.count()) and not self.resultat :
             self.examenline_set.all().delete()
             for q in self.questionnaire.questionnaireline_set.all():
-                self.examenline_set.create(question_line=q)
+                self.examenline_set.create(question_line=q, repondu=False)
     
     def get_readonly_fields(self, request, obj=None):
         if obj: # obj is not None, so this is an edit

@@ -38,7 +38,7 @@ def exam_for_user(request, exam_id):
     if not exam.debut:
         exam.debut = timezone.now()
     exam.save()
-    unanswered_questions = exam.examenline_set.filter(repondu=None)
+    unanswered_questions = exam.examenline_set.filter(repondu=False)
     elapsed = (timezone.now()-exam.debut).seconds
     if unanswered_questions and elapsed < (exam.questionnaire.duree * 60):
         next_question = unanswered_questions[0]
@@ -50,6 +50,7 @@ def exam_for_user(request, exam_id):
             'question_line': next_question,
             'question':q,
             'questionnaire' : exam,
+            'position' : q_position,
         })
         return render(request, "examens/examen.html", { "exam":exam, 
                                                         "question":q,

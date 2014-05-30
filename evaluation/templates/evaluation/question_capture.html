@@ -36,7 +36,7 @@
         {% endif %}
     {% endif %}
     <form action="{% if single_question %}{% url 'answer-single-question' question.id %}{% else %}{% url 'answer-exam-question' questionnaire.id question_line.id %}{% endif %}" method="post" id="question_form_id">
-        <fieldset style="padding:10px"><legend>Question {% if single_question %}{{ question.numero }}{% else %}{{ question_line.id }}{% endif %}</legend>
+        <fieldset style="padding:10px"><legend>Question {% if single_question %}{{ question.numero }}{% else %}{{ position }}{% endif %}</legend>
             <input type="button" value="Annuler" id="btn_annuler" />
             <input type="submit" value="Valider" />
             <p>{{ question.intitule|safe }}</p>
